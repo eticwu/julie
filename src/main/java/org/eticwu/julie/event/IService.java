@@ -1,4 +1,4 @@
-package org.eticwu.julie.handler;
+package org.eticwu.julie.event;
 
 public interface IService<R, T> {
 	
