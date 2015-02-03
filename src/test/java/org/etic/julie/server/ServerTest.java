@@ -13,7 +13,7 @@ public class ServerTest extends TestCase {
 
     @Test
     public void testStart() throws IOException, InterruptedException, ExecutionException {
-        Server server = new ServerBuilder().buildServer();
-        server.start();
+	Server server = new ServerBuilder().buildServer();
+	server.start();
     }
 }
