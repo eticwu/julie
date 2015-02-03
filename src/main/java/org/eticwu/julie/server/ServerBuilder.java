@@ -13,8 +13,13 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder setIdleTime(int idleTime) {
-        serverConfig.setIdleTime(idleTime);
+    public ServerBuilder setReadIdleTime(int idleTime) {
+        serverConfig.setReadIdleTime(idleTime);
+        return this;
+    }
+
+    public ServerBuilder setWriteIdleTime(int idleTime) {
+        serverConfig.setWriteIdleTime(idleTime);
         return this;
     }
 

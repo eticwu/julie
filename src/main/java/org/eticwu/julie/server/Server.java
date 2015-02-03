@@ -2,48 +2,53 @@ package org.eticwu.julie.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
-import org.eticwu.julie.handler.AcceptCompletionHandler;
+import org.eticwu.julie.session.ISession;
 import org.eticwu.julie.session.SessionManager;
 
-public class Server implements Runnable {
+public class Server {
 
-    private static final Logger             logger = Logger.getLogger(Server.class);
+    private static final Logger logger = Logger.getLogger(Server.class);
 
     private AsynchronousServerSocketChannel serverChannel;
 
-    private AcceptCompletionHandler         acceptCompletionHandler;
+    private ServerConfig serverConfig;
+
+    private SessionManager sessionManager;
 
     public Server(ServerConfig serverConfig) throws IOException {
-        AsynchronousChannelGroup group = AsynchronousChannelGroup.withCachedThreadPool(Executors.newCachedThreadPool(),
-            10);
-        this.serverChannel = AsynchronousServerSocketChannel.open(group);
-        configServer(serverConfig);
+	AsynchronousChannelGroup group = AsynchronousChannelGroup.withCachedThreadPool(
+		Executors.newCachedThreadPool(), 10);
+	this.serverChannel = AsynchronousServerSocketChannel.open(group);
+	this.serverConfig = serverConfig;
+	configServer(serverConfig);
+	this.sessionManager = new SessionManager(serverConfig);
     }
 
     private void configServer(ServerConfig serverConfig) throws IOException {
-        if (serverConfig.getPort() > 0) {
-            serverChannel.bind(new InetSocketAddress(serverConfig.getPort()));
-        }
-        if (serverConfig.getTcpRecBufSize() > 0) {
-            serverChannel.setOption(StandardSocketOptions.SO_RCVBUF, serverConfig.getTcpRecBufSize());
-        }
-        if (serverConfig.getTcpSndBufSize() > 0) {
-            serverChannel.setOption(StandardSocketOptions.SO_SNDBUF, serverConfig.getTcpSndBufSize());
-        }
-        SessionManager sessionManager = new SessionManager(serverConfig);
-        this.acceptCompletionHandler = new AcceptCompletionHandler(sessionManager);
+	if (serverConfig.getPort() > 0 && serverConfig.getBacklog() > 0) {
+	    serverChannel.bind(new InetSocketAddress(serverConfig.getPort()),
+		    serverConfig.getBacklog());
+	} else if (serverConfig.getPort() > 0) {
+	    serverChannel.bind(new InetSocketAddress(serverConfig.getPort()));
+	}
+	if (logger.isInfoEnabled()) {
+	    logger.info("server bind port: " + serverConfig.getPort());
+	}
     }
 
-    @Override
-    public void run() {
-        while (true) {
-            serverChannel.accept(null, acceptCompletionHandler);
-        }
+    public void start() throws InterruptedException, ExecutionException {
+	while (true) {
+	    Future<AsynchronousSocketChannel> future = serverChannel.accept();
+	    AsynchronousSocketChannel channel = future.get();
+	    ISession session = sessionManager.createSession(channel);
+	}
     }
 }
