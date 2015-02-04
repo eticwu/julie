@@ -9,10 +9,10 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.eticwu.julie.completion.ReadCompletionHandler;
+import org.eticwu.julie.completion.WriteCompletionHandler;
 import org.eticwu.julie.event.IService;
 import org.eticwu.julie.filter.IFilter;
-import org.eticwu.julie.handler.ReadCompletionHandler;
-import org.eticwu.julie.handler.WriteCompletionHandler;
 
 public class Session<T> implements ISession<T> {
 
