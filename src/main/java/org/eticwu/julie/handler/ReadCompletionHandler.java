@@ -8,8 +8,11 @@ public class ReadCompletionHandler implements CompletionHandler<Integer, ISessio
 
     @Override
     public void completed(Integer result, ISession session) {
-	// TODO parse
-	session.sessionReceived();
+        if (result < 0) {
+            session.sessionReleased();
+        } else {
+            session.sessionReceived();
+        }
     }
 
     @Override
