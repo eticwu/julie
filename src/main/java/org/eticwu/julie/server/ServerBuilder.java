@@ -2,7 +2,7 @@ package org.eticwu.julie.server;
 
 import java.io.IOException;
 
-import org.eticwu.julie.filter.IFilter;
+import org.eticwu.julie.handler.IHandler;
 
 public class ServerBuilder {
 
@@ -38,7 +38,7 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder addFilters(IFilter filter) {
+    public ServerBuilder addFilters(IHandler filter) {
         serverConfig.addFilter(filter);
         return this;
     }

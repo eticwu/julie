@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.eticwu.julie.event.IService;
-import org.eticwu.julie.filter.IFilter;
+import org.eticwu.julie.handler.IHandler;
 
 public class ServerConfig {
 
@@ -21,7 +21,7 @@ public class ServerConfig {
 
     private int tcpSndBufSize = 1024; // KB
 
-    private List<IFilter> filters = new LinkedList<IFilter>();
+    private List<IHandler> filters = new LinkedList<IHandler>();
 
     private int timeout = 5;
 
@@ -47,7 +47,7 @@ public class ServerConfig {
 	this.tcpSndBufSize = tcpSndBufSize;
     }
 
-    public void addFilter(IFilter filter) {
+    public void addFilter(IHandler filter) {
 	this.filters.add(filter);
     }
 
@@ -75,7 +75,7 @@ public class ServerConfig {
 	return tcpSndBufSize;
     }
 
-    public List<IFilter> getFilters() {
+    public List<IHandler> getFilters() {
 	return filters;
     }
 

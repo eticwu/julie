@@ -11,8 +11,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eticwu.julie.completion.ReadCompletionHandler;
 import org.eticwu.julie.completion.WriteCompletionHandler;
+import org.eticwu.julie.event.Event;
 import org.eticwu.julie.event.IService;
-import org.eticwu.julie.filter.IFilter;
+import org.eticwu.julie.handler.IHandler;
 
 public class Session<T> implements ISession<T> {
 
@@ -22,7 +23,7 @@ public class Session<T> implements ISession<T> {
 
     private Integer                   id;
 
-    private List<IFilter>             filters;
+    private List<IHandler>             filters;
 
     private IService                  service;
 
@@ -31,6 +32,8 @@ public class Session<T> implements ISession<T> {
     private WriteCompletionHandler    writeHandler;
 
     private ByteBuffer                buffer;
+    
+    private Pipeline                  pipeline;
 
     Session(Integer id, AsynchronousSocketChannel channel) {
         this.id = id;
@@ -38,34 +41,23 @@ public class Session<T> implements ISession<T> {
         this.readHandler = new ReadCompletionHandler();
         this.writeHandler = new WriteCompletionHandler();
         this.buffer = ByteBuffer.allocate(1024);
+        this.pipeline = new Pipeline();
     }
 
     @Override
     public void sessionCreated() {
-        if (CollectionUtils.isNotEmpty(filters)) {
-            for (IFilter filter : filters) {
-                filter.onCreated();
-            }
-        }
-        if (service != null) {
-            service.onCreated();
-        }
+        this.pipeline.publish(Event.SESSION_CREATED, this);
         this.channel.read(buffer, this, readHandler);
     }
 
     @Override
     public void sessionWrite(T message) {
-        if (message != null) {
-            if (CollectionUtils.isNotEmpty(filters)) {
-                for (IFilter filter : filters) {
-                    filter.onWrite();
-                }
-            }
-        }
+       this.pipeline.publish(Event.MESSAGE_SENT, this);
     }
 
     @Override
     public T sessionReceived() {
+	this.pipeline.publish(Event.MESSAGE_RECEIVED, this);
         Integer readBytes = 0;
         try {
             readBytes = this.channel.read(buffer).get();
@@ -112,7 +104,7 @@ public class Session<T> implements ISession<T> {
     }
 
     @Override
-    public void setFilters(List<IFilter> filters) {
+    public void setFilters(List<IHandler> filters) {
         this.filters = filters;
     }
 
@@ -123,30 +115,17 @@ public class Session<T> implements ISession<T> {
 
     @Override
     public void sessionReadIdle() {
-        if (CollectionUtils.isNotEmpty(filters)) {
-            for (IFilter filter : filters) {
-                filter.onReadIdle();
-            }
-        }
-        if (service != null) {
-            service.onReadIdle();
-        }
+        
     }
 
     @Override
     public void sessionWriteIdle() {
-        if (CollectionUtils.isNotEmpty(filters)) {
-            for (IFilter filter : filters) {
-                filter.onWriteIdle();
-            }
-        }
-        if (service != null) {
-            service.onWriteIdle();
-        }
+        
     }
 
-    private void pendingRead() {
-        this.channel.read(null, this, readHandler);
+    @Override
+    public ByteBuffer getByteBuffer() {
+	return buffer;
     }
 
 }
