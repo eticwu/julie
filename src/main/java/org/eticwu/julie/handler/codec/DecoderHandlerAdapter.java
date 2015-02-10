@@ -2,7 +2,9 @@ package org.eticwu.julie.handler.codec;
 
 import java.nio.ByteBuffer;
 
+import org.eticwu.julie.event.Event;
 import org.eticwu.julie.handler.AbstractHandler;
+import org.eticwu.julie.handler.IHandler;
 import org.eticwu.julie.session.ISession;
 
 public class DecoderHandlerAdapter extends AbstractHandler {
@@ -23,15 +25,22 @@ public class DecoderHandlerAdapter extends AbstractHandler {
     }
 
     @Override
-    public void messageReceived(ISession session) {
-	Object object = decode(session.getByteBuffer());
+    public void messageReceived(Event event, ISession session, Object message) {
+	if (!(message instanceof ByteBuffer)) {
+	    return;
+	}
+	Object object = decode((ByteBuffer) message);
+	IHandler next = getNextHandler();
+	if (next != null) {
+	    next.action(event, session, object);
+	}
     }
 
     @Override
     public void messageSent(ISession session) {
 
     }
-    
+
     public Object decode(ByteBuffer buffer) {
 	return null;
     }
