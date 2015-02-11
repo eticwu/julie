@@ -2,13 +2,10 @@ package org.eticwu.julie.session;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eticwu.julie.completion.ReadCompletionHandler;
 import org.eticwu.julie.completion.WriteCompletionHandler;
-import org.eticwu.julie.event.Event;
-import org.eticwu.julie.event.IService;
 import org.eticwu.julie.handler.IHandler;
 import org.eticwu.julie.server.ServerConfig;
 
@@ -20,9 +17,7 @@ public class Session<T> implements ISession<T> {
 
     private Integer id;
 
-    private List<IHandler> filters;
-
-    private IService service;
+    private IHandler handler;
 
     private ReadCompletionHandler readHandler;
 
@@ -42,8 +37,7 @@ public class Session<T> implements ISession<T> {
 	this.pipeline = new Pipeline();
 	this.pipeline.addLast(config.getFilters());
 	this.bufferSize = config.getBufferSize();
-	this.filters = config.getFilters();
-	this.service = config.getService();
+	this.handler = config.getHandler();
 	this.buffer = ByteBuffer.allocate(this.bufferSize);
     }
 
@@ -61,7 +55,7 @@ public class Session<T> implements ISession<T> {
     @Override
     public T sessionReceived() {
 	this.buffer.flip();
-	this.pipeline.publish(Event.MESSAGE_RECEIVED, this, this.buffer);
+	this.pipeline.fireMessageReceived(this.pipeline.getHead(), this, this.buffer);
 	this.buffer.clear();
 	this.channel.read(buffer, this, readHandler);
 	return null;
@@ -84,6 +78,11 @@ public class Session<T> implements ISession<T> {
     @Override
     public ByteBuffer getBuffer() {
 	return this.buffer;
+    }
+
+    @Override
+    public Pipeline getPipeline() {
+	return this.pipeline;
     }
 
 }

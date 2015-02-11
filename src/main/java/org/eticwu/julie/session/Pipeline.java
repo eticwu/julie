@@ -3,37 +3,41 @@ package org.eticwu.julie.session;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eticwu.julie.event.Event;
+import org.eticwu.julie.handler.Filter;
 import org.eticwu.julie.handler.IHandler;
 
 public class Pipeline {
 
     private List<IHandler> handlers = new LinkedList<>();
 
-    private IHandler head;
+    private Filter head;
 
-    private IHandler tail;
+    private Filter tail;
 
-    public void addLast(IHandler handler) {
+    public void addLast(Filter handler) {
 	if (head == null) {
 	    head = handler;
 	    tail = handler;
 	} else {
-	    tail.setNextHandler(handler);
+	    tail.setNextFilter(handler);
 	    tail = handler;
 	}
     }
 
-    public void addLast(List<IHandler> handlers) {
-	for (IHandler handler : handlers) {
-	    addLast(handler);
+    public void addLast(List<Filter> filters) {
+	for (Filter filter : filters) {
+	    addLast(filter);
 	}
     }
 
-    public void publish(Event event, ISession session, Object message) {
-	if (head != null) {
-	    head.action(event, session, message);
+    public void fireMessageReceived(IHandler handler, ISession session, Object message) {
+	if (handler == null) {
+	    return;
 	}
+	handler.messageReceived(session, message);
+    }
 
+    public IHandler getHead() {
+	return this.head;
     }
 }

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.eticwu.julie.event.IService;
+import org.eticwu.julie.handler.Filter;
 import org.eticwu.julie.handler.IHandler;
 
 public class ServerConfig {
@@ -21,7 +21,7 @@ public class ServerConfig {
 
     private int tcpSndBufSize = 1024; // KB
 
-    private List<IHandler> filters = new LinkedList<IHandler>();
+    private List<Filter> filters = new LinkedList<Filter>();
 
     private int timeout = 5;
 
@@ -29,7 +29,7 @@ public class ServerConfig {
 
     private ExecutorService bizExecutors;
 
-    private IService service;
+    private IHandler handler;
 
     public void setPort(int port) {
 	this.port = port;
@@ -47,7 +47,7 @@ public class ServerConfig {
 	this.tcpSndBufSize = tcpSndBufSize;
     }
 
-    public void addFilter(IHandler filter) {
+    public void addFilter(Filter filter) {
 	this.filters.add(filter);
     }
 
@@ -75,7 +75,7 @@ public class ServerConfig {
 	return tcpSndBufSize;
     }
 
-    public List<IHandler> getFilters() {
+    public List<Filter> getFilters() {
 	return filters;
     }
 
@@ -111,12 +111,12 @@ public class ServerConfig {
 	this.bizExecutors = bizExecutors;
     }
 
-    public IService getService() {
-	return service;
+    public IHandler getHandler() {
+	return handler;
     }
 
-    public void setService(IService service) {
-	this.service = service;
+    public void setHandler(IHandler handler) {
+	this.handler = handler;
     }
 
 }

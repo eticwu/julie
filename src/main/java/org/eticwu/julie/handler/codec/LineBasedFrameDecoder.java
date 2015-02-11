@@ -1,8 +1,11 @@
 package org.eticwu.julie.handler.codec;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
-public class LineBasedFrameDecoder extends DecoderHandlerAdapter {
+import org.eticwu.julie.session.ISession;
+
+public class LineBasedFrameDecoder extends FrameDecoder {
 
     private int maxLength;
 
@@ -13,38 +16,53 @@ public class LineBasedFrameDecoder extends DecoderHandlerAdapter {
 	this.includeDelem = includeDelem;
     }
 
+    private int searchPos(ByteBuffer buffer) {
+	for (int i = buffer.position(); i < buffer.limit(); i++) {
+	    byte b = buffer.get(i);
+	    if (b == '\n') {
+		return i;
+	    } else if (b == '\r' && i < buffer.limit() - 1 && buffer.get(i + 1) == '\n') {
+		return i;
+	    }
+	}
+	return -1;
+    }
+
     @Override
-    public Object decode(ByteBuffer buffer) {
-	if (buffer != null && buffer.hasRemaining()) {
-	    int pos = searchPos(buffer);
-	    if (pos >= maxLength) {
+    public void decode(ISession session, ByteBuffer in, List<Object> out) {
+	Object obj = decode(session, in);
+	if (obj != null) {
+	    out.add(obj);
+	}
+    }
+
+    public Object decode(ISession session, ByteBuffer in) {
+	if (in != null && in.hasRemaining()) {
+	    int pos = searchPos(in);
+	    if (pos == -1) {
+		// TODO
 		return null;
 	    }
-	    int resultLen = 0;
+	    int cur = in.position();
+	    int resultLen = pos - cur;
+	    if (resultLen > maxLength) {
+		// TODO
+		return null;
+	    }
+
+	    int delemLen = (in.get(pos) == '\r') ? 2 : 1;
 	    if (includeDelem) {
-		resultLen = pos + ((buffer.get(pos) == '\r') ? 2 : 1);
-	    } else {
-		resultLen = pos;
+		resultLen += delemLen;
 	    }
 	    byte[] bytes = new byte[resultLen];
-	    buffer.get(bytes, 0, resultLen);
-	    return bytes;
+	    in.get(bytes, 0, resultLen);
+	    if (!includeDelem) {
+		for (int i = 0; i < delemLen; i++) {
+		    in.get();// skip delem
+		}
+	    }
+	    return ByteBuffer.wrap(bytes);
 	}
 	return null;
     }
-
-    private int searchPos(ByteBuffer buffer) {
-	int length = buffer.remaining();
-	int i = 0;
-	for (; i < length; i++) {
-	    byte b = buffer.get(i);
-	    if (b == '\n') {
-		break;
-	    } else if (b == '\r' && i < length - 1 && buffer.get(i + 1) == '\n') {
-		break;
-	    }
-	}
-	return i;
-    }
-
 }

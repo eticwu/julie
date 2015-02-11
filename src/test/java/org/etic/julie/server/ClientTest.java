@@ -14,11 +14,12 @@ public class ClientTest {
 	Socket socket = new Socket("127.0.0.1", 8090);
 	OutputStream out = socket.getOutputStream();
 
-	for (int i = 1; i < 1000; i++) {
-	    out.write("10101010101\n1000010".getBytes());
-	    // System.out.println(i);
-	    Thread.sleep(1000);
-	}
+	// for (int i = 1; i < 1000; i++) {
+	out.write("10101010101\n1000010".getBytes());
+	out.write("22222222\n".getBytes());
+	// System.out.println(i);
+	Thread.sleep(1000);
+	// }
 	socket.close();
     }
 }

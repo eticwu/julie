@@ -18,4 +18,6 @@ public interface ISession<T> {
 
     public ByteBuffer getBuffer();
 
+    public Pipeline getPipeline();
+
 }
